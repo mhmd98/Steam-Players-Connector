@@ -1,0 +1,212 @@
+﻿<Window x:Class="SteamPlayersConnector.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:converters="clr-namespace:SteamPlayersConnector.Converters"
+        xmlns:local="clr-namespace:SteamPlayersConnector"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:Flags="clr-namespace:FamFamFam.Flags.Wpf;assembly=FamFamFam.Flags.Wpf"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        x:Name="Window"
+        Title="{Binding Title}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+        <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
+        <Flags:CountryIdToFlagImageSourceConverter x:Key="CountryIdToFlagImageSourceConverter" />
+        <Style TargetType="ScrollBar">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryAccentBrush}"/>
+        </Style>
+    </Window.Resources>
+    <xctk:BusyIndicator IsBusy="{Binding IsBusy}">
+        <xctk:BusyIndicator.BusyContentTemplate>
+            <DataTemplate>
+                <StackPanel Margin="4">
+                    <TextBlock Text="Loading..." FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <StackPanel HorizontalAlignment="Stretch" Margin="4">
+                        <TextBlock Text="{Binding DataContext.LoadingText,ElementName=Window}"/>
+                        <ProgressBar Background="White" Foreground="{DynamicResource SecondaryAccentBrush}" BorderThickness="0" Minimum="0" Maximum="100"  Value="{Binding DataContext.LoadingProgressValue,ElementName=Window}" IsIndeterminate="{Binding DataContext.IsProgressBarIndeterminate,ElementName=Window}" MinWidth="150" Height="15" materialDesign:TransitionAssist.DisableTransitions="True"/>
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>
+        </xctk:BusyIndicator.BusyContentTemplate>
+        <xctk:BusyIndicator.ProgressBarStyle>
+            <Style TargetType="ProgressBar">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </Style>
+        </xctk:BusyIndicator.ProgressBarStyle>
+
+
+        <Grid>
+
+            <materialDesign:Card Visibility="{Binding IsFileLoaded,Converter={StaticResource InverseBoolToVisConverter}}" Foreground="{DynamicResource SecondaryAccentForegroundBrush}" Background="{DynamicResource SecondaryAccentBrush}" Margin="10" Padding="30" AllowDrop="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Drop">
+                        <prism:InvokeCommandAction
+                    Command="{Binding LoadDroppedFileCommand}">
+                        </prism:InvokeCommandAction>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <StackPanel  VerticalAlignment="Center"  HorizontalAlignment="Center">
+                    <TextBox MaxWidth="1000" Foreground="Black" FontSize="24" Margin="0,0,0,50" HorizontalAlignment="Stretch"
+                                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                     materialDesign:HintAssist.Hint="SteamKey"
+                                     Text="{Binding SteamKeyText, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock  TextWrapping="Wrap"  FontWeight="Bold" FontSize="27" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        You can generate a key by going to: 
+                         <Hyperlink CommandParameter="https://steamcommunity.com/dev/apikey" Command="{Binding OpenLinkCommand}">
+                        https://steamcommunity.com/dev/apikey
+                    </Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock TextWrapping="Wrap"  FontWeight="Bold" FontSize="52" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="Drop your DB here"/>
+                    <Button Command="{Binding LoadFileCommand}" Panel.ZIndex="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Content="Browse"/>
+                </StackPanel>
+
+            </materialDesign:Card>
+            <materialDesign:Card VerticalAlignment="Stretch" Visibility="{Binding IsFileLoaded, Converter={StaticResource BoolToVisConverter}}" >
+                <Grid VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ToolBarTray>
+                        <ToolBar Style="{DynamicResource MaterialDesignToolBar}" ClipToBounds="False">
+                            <Button ToolTip="Open New DB File" Command="{Binding LoadNewFileCommand}">
+                                <materialDesign:PackIcon Kind="File" />
+                            </Button>
+                            <Separator />
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox MinWidth="90" Margin="0,0,10,9" VerticalAlignment="Center"
+                                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                     materialDesign:HintAssist.Hint="Search"
+                                     Text="{Binding SearchText}"/>
+                                <Grid Width="124">
+                                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                                        Content="Search"
+                                        Command="{Binding SearchCommand}"
+                                        Margin="10,0" />
+                                </Grid>
+                                <Grid Width="90">
+                                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                                        Content="Clear"
+                                        Command="{Binding ClearCommand}"
+                                        Margin="10,0" />
+                                </Grid>
+                            </StackPanel>
+
+                            <Separator/>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Label VerticalContentAlignment="Center" Content="Only Show Banned Players"></Label>
+                                <ToggleButton x:Name="BannedToggle" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                                      ToolTip="MaterialDesignSwitchAccentToggleButton"
+                                      IsChecked="{Binding IsBannedOnly}" Command="{Binding ShowBannedOnlyCommand}" />
+                            </StackPanel>
+                            <Separator/>
+                            <Label VerticalAlignment="Center" HorizontalAlignment="Center" Content="{Binding PlayersListCount}" ContentStringFormat="Count: {0}"/>
+                        </ToolBar>
+                    </ToolBarTray>
+                    <DataGrid Grid.Row="1"
+                          Margin="0,5,0,0"
+                          CanUserAddRows="false"
+                          IsReadOnly="True"
+                          SelectionUnit="Cell"
+                          SelectionMode="Single"
+                          ItemsSource="{Binding FilteredPlayersList, Mode=TwoWay,NotifyOnSourceUpdated=True,NotifyOnTargetUpdated=True}"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          materialDesign:ShadowAssist.ShadowDepth="Depth5"
+                          materialDesign:ShadowAssist.ShadowEdges="Top"
+                          AutoGenerateColumns="False"
+                          CanUserSortColumns="True"
+                          CurrentCell="{Binding SelectedCell, Mode=TwoWay,NotifyOnSourceUpdated=True,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}">
+                        <DataGrid.InputBindings>
+                            <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding LookUpInfoCommand}"/>
+                        </DataGrid.InputBindings>
+                        <DataGrid.Resources>
+                            <Style x:Key="CellStyle" TargetType="{x:Type DataGridCell}">
+                                <Setter Property="Foreground" Value="Black" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{x:Null}" />
+                                        <Setter Property="BorderBrush" Value="{x:Null}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style TargetType="DataGridCell" x:Key="CenterCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </Style>
+
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}" >
+                                <Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}"/>
+                            </Style>
+                            <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VACBanned}" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding GameBanned}" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DataContext.IsRowSelected,ElementName=Window}" Value="false">
+                                        <Setter Property="IsSelected" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name in DB"   Binding="{Binding NameDb}"  />
+                            <DataGridTextColumn Header="Current Name"   Binding="{Binding CurrentName}" />
+                            <DataGridTextColumn Header="Last Known IP"   Binding="{Binding LastIp}">
+
+                            </DataGridTextColumn>
+                            <DataGridTemplateColumn SortMemberPath="CountryCode" Header="Country" CellStyle="{StaticResource CenterCell}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Source="{Binding CountryCode, Converter={StaticResource CountryIdToFlagImageSourceConverter}}"
+                            RenderOptions.BitmapScalingMode="HighQuality" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Profile Link" >
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                <Hyperlink  CommandParameter="{Binding SteamUrl}" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.OpenLinkCommand}">
+                                      <TextBlock Text="{Binding SteamUrl}"/>
+                                </Hyperlink>
+                            </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridCheckBoxColumn Binding="{Binding VACBanned}" Header="Vac Banned?" ElementStyle="{StaticResource MaterialDesignCheckBox}"
+                                        EditingElementStyle="{StaticResource MaterialDesignCheckBox}" CellStyle="{StaticResource CenterCell}"/>
+                            <DataGridCheckBoxColumn Binding="{Binding GameBanned}" Header="Game Banned?" ElementStyle="{StaticResource MaterialDesignCheckBox}"
+                                        EditingElementStyle="{StaticResource MaterialDesignCheckBox}" CellStyle="{StaticResource CenterCell}">
+                            </DataGridCheckBoxColumn>
+                            <DataGridTextColumn Header="Days Since Last Ban" Binding="{Binding DaysSinceLastBan}" CellStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn x:Name="GameBansCountColumn" IsReadOnly="True" Header="GameBans count"   Binding="{Binding NumberOfGameBans}" CellStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="VAC count"  Binding="{Binding NumberOfVACBans}" CellStyle="{StaticResource CenterCell}"/>
+                            <DataGridCheckBoxColumn IsReadOnly="True"  Binding="{Binding CommunityBanned}" Header="Community Banned?" ElementStyle="{StaticResource MaterialDesignCheckBox}"
+                                        EditingElementStyle="{StaticResource MaterialDesignCheckBox}" CellStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="STEAMID"  Binding="{Binding SteamId}"  />
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+            </materialDesign:Card>
+        </Grid>
+    </xctk:BusyIndicator>
+</Window>
